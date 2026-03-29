@@ -47,7 +47,8 @@ export function useNotifications() {
           
         new Notification(title, {
           body,
-          icon: 'https://api.iconify.design/lucide:brain-circuit.svg'
+          icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
         });
       }
     } catch (error) {
