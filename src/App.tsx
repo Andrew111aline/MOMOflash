@@ -3,9 +3,10 @@ import { Home } from './components/Home';
 import { DeckView } from './components/DeckView';
 import { StudyView } from './components/StudyView';
 import { StatsView } from './components/StatsView';
-import { BarChart2, Bell, BellRing, BellOff, Settings } from 'lucide-react';
+import { BarChart2, Bell, BellRing, BellOff, Download, Settings, X } from 'lucide-react';
 import { useTranslation } from './lib/i18n';
 import { useNotifications } from './lib/useNotifications';
+import { usePwaInstall } from './lib/usePwaInstall';
 
 type ViewState = 
   | { type: 'home' }
@@ -18,6 +19,16 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const { t, lang, setLang } = useTranslation();
   const { permission, requestPermission, reminderTime, updateReminderTime } = useNotifications();
+  const {
+    isInstallable,
+    canShowManualGuide,
+    needsAndroidSecureOriginHelp,
+    shouldShowInstallBanner,
+    showIosGuide,
+    setShowIosGuide,
+    dismissBanner,
+    promptInstall,
+  } = usePwaInstall();
   const [tempTime, setTempTime] = useState(reminderTime);
 
   const handleBellClick = () => {
@@ -49,6 +60,17 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-4">
+            {(isInstallable || canShowManualGuide) && (
+              <button
+                onClick={() => void promptInstall()}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                title={t('app.install')}
+              >
+                <Download size={18} />
+                <span className="hidden sm:inline text-sm font-medium">{t('app.install')}</span>
+              </button>
+            )}
+
             <button
               onClick={handleBellClick}
               disabled={permission === 'denied' || permission === 'unsupported'}
@@ -96,6 +118,40 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      {shouldShowInstallBanner && (
+        <div className="bg-blue-600 text-white">
+          <div className="max-w-4xl mx-auto px-6 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold">{t('app.installTitle')}</p>
+              <p className="text-sm text-blue-100">{t('app.installDescription')}</p>
+              {canShowManualGuide && (
+                <p className="text-xs text-blue-100 mt-1">{t('app.installIosHint')}</p>
+              )}
+              {needsAndroidSecureOriginHelp && (
+                <p className="text-xs text-blue-100 mt-1">{t('app.installAndroidHint')}</p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {!needsAndroidSecureOriginHelp && (
+                <button
+                  onClick={() => void promptInstall()}
+                  className="px-4 py-2 rounded-lg bg-white text-blue-700 font-medium hover:bg-blue-50 transition-colors"
+                >
+                  {t('app.installButton')}
+                </button>
+              )}
+              <button
+                onClick={dismissBanner}
+                className="px-4 py-2 rounded-lg border border-blue-300 text-white hover:bg-blue-500 transition-colors"
+              >
+                {t('app.installLater')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="py-8">
         {view.type === 'home' && (
@@ -153,6 +209,38 @@ export default function App() {
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   {t('settings.save')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showIosGuide && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">{t('app.installGuideTitle')}</h2>
+                <button
+                  onClick={() => setShowIosGuide(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={t('app.close')}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-3 text-sm text-gray-700">
+                <p>{t('app.installGuideStep1')}</p>
+                <p>{t('app.installGuideStep2')}</p>
+                <p>{t('app.installGuideStep3')}</p>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => setShowIosGuide(false)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {t('app.close')}
                 </button>
               </div>
             </div>

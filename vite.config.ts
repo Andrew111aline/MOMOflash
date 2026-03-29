@@ -18,7 +18,7 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        injectRegister: 'auto',
+        injectRegister: false,
         includeAssets: [
           '龙猫.jpg',
           'apple-touch-icon.png',
@@ -27,9 +27,12 @@ export default defineConfig(({mode}) => {
           'maskable-icon-512x512.png',
         ],
         manifest: {
+          id: '/',
           name: appName,
           short_name: appShortName,
           description: appDescription,
+          lang: 'zh-CN',
+          dir: 'ltr',
           theme_color: themeColor,
           background_color: backgroundColor,
           display: 'standalone',
@@ -60,6 +63,9 @@ export default defineConfig(({mode}) => {
           cleanupOutdatedCaches: true,
           globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webmanifest}'],
           navigateFallback: 'index.html',
+        },
+        devOptions: {
+          enabled: true,
         },
       }),
     ],
